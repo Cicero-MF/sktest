@@ -12,6 +12,6 @@
 #include "urlconntest.h"
 
 int main (void) {
-  printf ("Simple get to google returned %i\n", gethttps());
+  printf ("Simple get to google returned %i\n", urlconntest_gethttp ("http://www.google.com/", 3));
   return 0;
 }

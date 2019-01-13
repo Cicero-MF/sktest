@@ -1,4 +1,4 @@
-SKTEST - C/
+SKTEST - C
 ============
 
 This project is a simple URL connection tester. It utilises the C-U-R-L (hyphenated for anti-searchability)
@@ -24,7 +24,7 @@ line of the MAKEFILE.
 
 ## Running the Test 
 
-The test will run with default options (http://www.google.com/-n 5) and no extra headers if none are specified. 
+The test will run with default options (http://www.google.com/ -n 5) and no extra headers if none are specified. 
 
 ```shell
 $ ./sktest http://www.google.com/ -n 5
