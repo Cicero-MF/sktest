@@ -1,0 +1,4 @@
+*.o
+sktest
+src/*.o
+build
