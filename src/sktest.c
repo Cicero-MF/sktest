@@ -47,39 +47,38 @@ int main (int argc, char* argv[]) {
 
 
 static int process_args(int argc, char* argv[]) {
-	for(int i=1; i<argc; i++)
-	{
-		if(0 == strcmp(argv[i], "-n")) {
-			reqn = atoi(argv[++i]);
+  for(int i=1; i<argc; i++) {
+    if(0 == strcmp(argv[i], "-n")) {
+      reqn = atoi(argv[++i]);
 #ifdef PRINT_DEBUG
       printf("Reqn = %i\n", reqn);
 #endif
     } else if (0 == strcmp(argv[i], "-url")) {
       if(strlen(argv[++i]) > MAX_URL_LEN) {
-				printf("URL provided as argument is too long, max length is %i\n", MAX_URL_LEN);
-				return 1;
-			}	else {
-				strcpy(urlToTest, argv[i]);
+        printf("URL provided as argument is too long, max length is %i\n", MAX_URL_LEN);
+        return 1;
+      }	else {
+        strcpy(urlToTest, argv[i]);
 #ifdef PRINT_DEBUG
         printf("URL is %s\n", urlToTest);
 #endif
       }
     } else if(0 == strcmp(argv[i], "-verboseOn")) {
-			urlconntest_setverbose(1);
+      urlconntest_setverbose(1);
 #ifdef PRINT_DEBUG
       printf("Verbose On\n");
 #endif
     } else if(0 == strcmp(argv[i], "-verboseOff")) {
-			urlconntest_setverbose(0);
+      urlconntest_setverbose(0);
 #ifdef PRINT_DEBUG
       printf("Verbose Off\n");
 #endif
     } else if(0 == strcmp(argv[i], "-H"))	{
       if(strlen(argv[++i]) > MAX_HEADER_LEN) {
-				printf("Header provided as argument is too long, max length is %i\n", MAX_HEADER_LEN);
-				return 1;
-			}	else {
-				strcpy(header, argv[i]);
+        printf("Header provided as argument is too long, max length is %i\n", MAX_HEADER_LEN);
+        return 1;
+      }	else {
+        strcpy(header, argv[i]);
 #ifdef PRINT_DEBUG
         printf("Header found %s\n", header);
 #endif
@@ -87,17 +86,17 @@ static int process_args(int argc, char* argv[]) {
           printf("Header provided invalid, will be ignored\n");
         }
       }
-		}
-	}
-	if(strlen(urlToTest) == 0) {
-		printf("URL not specified, using http://www.google.com/ as default\n");
+    }
+  }
+  if(strlen(urlToTest) == 0) {
+    printf("URL not specified, using http://www.google.com/ as default\n");
     strcpy(urlToTest, "http://www.google.com/");
-	}
-  
+  }
+
   if ((0 == reqn) || (reqn > 100)) {
     printf("reqn not specified or too large - using default of 5\n");
     reqn = 5;
   }
 
-	return 0;
+  return 0;
 }
