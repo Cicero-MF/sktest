@@ -3,6 +3,7 @@
  *      Year   : 2018
  *      Author : Mark Ferris
  *
+ *      urlconntest - url connection tester - interface to libcurl
  */
 
 #include <stdio.h>
@@ -10,6 +11,7 @@
 #include <string.h>
  
 #include <curl/curl.h>
+#include "util.h"
 #include "urlconntest.h"
 
 typedef struct {
@@ -24,7 +26,11 @@ const t_sCURLoptMetrics curlTimeTests[nTIME_TESTS] = {
   {CURLINFO_TOTAL_TIME,         "Total Time"}
 };
 
-t_sMetrics metricStructArr [nTIME_TESTS] = {0};
+struct {
+  t_sMetrics metricStructArr [nTIME_TESTS];
+  char ip[ULRCONNTEST_IP_STR_LEN];
+  long respCode;
+} storeValsStruct = {0};
 
 struct memoryStruct {
   char *memory;
@@ -32,10 +38,13 @@ struct memoryStruct {
 };
 
 
-/* Function prototypes */
-static size_t writeMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp);
+/* ============================ Function prototypes ================================================================ */
+static size_t write_memory_callback(void *contents, size_t size, size_t nmemb, void *userp);
 static CURLcode get_time_metrics (CURL *handle, int *rett);
+static void process_metric (int *arrToSort, int timeTest, int reqn) ;
 
+
+/* ============================ Public functions =================================================================== */
 
 /* Connection test handler and interface to libcurl */
 int urlconntest_gethttp (char *url, unsigned int reqn) {
@@ -71,7 +80,7 @@ int urlconntest_gethttp (char *url, unsigned int reqn) {
     curl_easy_setopt(curl_handle, CURLOPT_URL, url);
 
     /* Register writedata callback to suppress stdio output */ 
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, writeMemoryCallback);
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_memory_callback);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
 
     /* some servers don't like requests that are made without a user-agent
@@ -86,12 +95,15 @@ int urlconntest_gethttp (char *url, unsigned int reqn) {
               curl_easy_strerror(res));
       break;
     } else {
-      /*
-       * Now, our chunk.memory points to a memory block that is chunk.size
-       * bytes big and contains the remote file.
-       *
-       * Do something nice with it!
-       */ 
+      /* Get non-variable info (URL, rep code) on first run */
+      if (i == 1) {
+        char *ip;
+        res = curl_easy_getinfo(curl_handle, CURLINFO_PRIMARY_IP, &ip);
+        strcpy (storeValsStruct.ip, ip);
+        printf ("IP = %s\n", ip);
+        res = curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &storeValsStruct.respCode);
+      }
+      
       res = get_time_metrics(curl_handle, &timeVals[i][0]);
       if (CURLE_OK == res) {
         printf("Request %i, of %i completed\n", i + 1, reqn);
@@ -107,6 +119,28 @@ int urlconntest_gethttp (char *url, unsigned int reqn) {
  
   free(chunk.memory);
   
+  /* Process metrics if all completed */
+  if (i == reqn) {
+    int j;
+    int *arrToSort;
+    
+    arrToSort = malloc(reqn * sizeof(int));
+    if (NULL == arrToSort) {
+      fprintf(stderr, "not enough memory to sort: NULL pointer\n");
+      return 1;
+    }   
+  
+    for (i = 0; i < nTIME_TESTS; i++) {      
+      for (j=0; j < reqn; j++) {
+        arrToSort[j] = timeVals[j][i];        
+      }
+     
+      process_metric (arrToSort, i, reqn);
+    }
+    
+    free(arrToSort);
+  } 
+  
   free(timeVals);
  
   /* we're done with libcurl, so clean it up */ 
@@ -115,11 +149,42 @@ int urlconntest_gethttp (char *url, unsigned int reqn) {
   return 0;
 }
 
+char *urlconntest_getip (void) {
+  /* Force NULL termination */
+  storeValsStruct.ip[ULRCONNTEST_IP_STR_LEN-1] = 0;
+  return storeValsStruct.ip;
+}
 
-/* Private functions */
+long urlconntest_getrespcode (void) {
+  return storeValsStruct.respCode;
+}
+
+double urlconntest_getmedianMetric (t_urlconntest_metrics metric) {  
+  if (metric >= nTIME_TESTS) return 0;
+  
+  return storeValsStruct.metricStructArr[metric].median;
+}
+
+
+/* ============================ Private functions ================================================================== */
+static void process_metric (int *arrToSort, int timeTest, int reqn) {
+  if (timeTest >= nTIME_TESTS) return;
+  
+  storeValsStruct.metricStructArr[timeTest].median = util_median(arrToSort, reqn);
+  storeValsStruct.metricStructArr[timeTest].min = arrToSort[0];
+  storeValsStruct.metricStructArr[timeTest].max = arrToSort[reqn-1];
+  storeValsStruct.metricStructArr[timeTest].jitter = 
+    storeValsStruct.metricStructArr[timeTest].max - storeValsStruct.metricStructArr[timeTest].min;
+
+  printf ("\n%s:\n\tMedian = %.0fus\n", curlTimeTests[timeTest].optionName, 
+                                        storeValsStruct.metricStructArr[timeTest].median);
+  printf ("\tMin = %ius\n", storeValsStruct.metricStructArr[timeTest].min);
+  printf ("\tMax = %ius\n", storeValsStruct.metricStructArr[timeTest].max);
+  printf ("\tJitter = %ius\n", storeValsStruct.metricStructArr[timeTest].jitter);
+}
 
 static size_t
-writeMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
+write_memory_callback(void *contents, size_t size, size_t nmemb, void *userp)
 {
   size_t realsize = size * nmemb;
   struct memoryStruct *mem = (struct memoryStruct *)userp;

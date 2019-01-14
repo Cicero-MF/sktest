@@ -8,9 +8,9 @@ LDLIBS=-lcurl -lm -lssl -lcrypto -lz
 # latest Curl release
 LIBCURL_VERSION := 7.63.0
 
-COMMON_OBJ=src/urlconntest.o
-ALL_SRC=src/urlconntest.c src/sktest.c
-ALL_HDR=src/urlconntest.h src/sktest.h
+COMMON_OBJ=src/urlconntest.o src/util.o
+ALL_SRC=src/urlconntest.c src/sktest.c src/util.c
+ALL_HDR=src/urlconntest.h src/sktest.h src/util.h
 DEPS=$(BUILD_PATH)/libcurl_install/lib/libcurl.a
 
 all: sktest
