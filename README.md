@@ -9,7 +9,18 @@ Author: Mark Ferris aka cicero-mf
 
 ## Compiling
 
-To download and compile, run the following commands from a linux shell (the code works on Mac as well)
+If you're on a completely clean system you will need the following installed:
+
+```shell
+$ sudo apt install git
+$ sudo apt install make
+$ sudo apt install curl
+$ sudo apt install libssl-dev
+$ sudo apt install libssl-dev
+$ sudo apt install zlib1g-dev
+```
+
+To download and compile and run, run the following commands from a linux shell (tested in ubuntu)
 
 ```shell
 $ git clone https://github.com/cicero-mf/sktest.git
@@ -24,10 +35,10 @@ line of the MAKEFILE.
 
 ## Running the Test 
 
-The test will run with default options (http://www.google.com/ -n 5) and no extra headers if none are specified. 
+The test will run with default options (-url http://www.google.com/ -n 5) and no extra headers if none are specified. 
 
 ```shell
-$ ./sktest http://www.google.com/ -n 5
+$ ./sktest -url http://www.google.com/ -n 5 -verboseOn
 ```
 
 ### Arguments
@@ -40,7 +51,7 @@ A list of arguments that can be provided to the test in addition to the URL are 
 
 ### Output
 
-When the test finishes, it prints a ; separated list of metrics as listed below.
+When the test finishes, it prints a ; separated list of metrics as listed below - timings in microseconds.
 
 - SKTEST
 - \<IP address of HTTP server\>
@@ -50,3 +61,14 @@ When the test finishes, it prints a ; separated list of metrics as listed below.
 - \<median of the start transfer time\>
 - \<median of total time\>
 
+### TODO
+
+Given time, I'd have like to have done the following:
+
+- Would've have liked to test a lot more, written tests for the median calc functions etc. 
+- Error checking and catching could be better in places.  
+- Would've liked to further investigate whether tests are more consistent and reliable without forcing a new connection every time - this would speed up the testing considerably. Only forced a new connection to try to get a consistent name lookup time.
+- Would like to investigate SSL connections, and compare
+- Test larger sample sets.  
+- Periodic testing to get a better picture at different times of the day.
+- Static analysis using splint was attampted but would've taken too long to remove the curl rabbithole it wanted to go down

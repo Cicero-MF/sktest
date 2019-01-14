@@ -14,6 +14,8 @@
 #include "util.h"
 #include "urlconntest.h"
 
+int printVerbose = 0;
+
 typedef struct {
   CURLoption option;
   char *optionName;  
@@ -32,19 +34,25 @@ struct {
   long respCode;
 } storeValsStruct = {0};
 
-struct memoryStruct {
+struct t_sMemoryStruct {
   char *memory;
   size_t size;
 };
+
+struct curl_slist *headerList = NULL;
 
 
 /* ============================ Function prototypes ================================================================ */
 static size_t write_memory_callback(void *contents, size_t size, size_t nmemb, void *userp);
 static CURLcode get_time_metrics (CURL *handle, int *rett);
-static void process_metric (int *arrToSort, int timeTest, int reqn) ;
+static void process_metric (int *arrToSort, int timeTest, int reqn);
 
 
 /* ============================ Public functions =================================================================== */
+void urlconntest_init (void) {
+  memset(&storeValsStruct, 0, sizeof(storeValsStruct));
+  curl_slist_free_all(headerList);
+}
 
 /* Connection test handler and interface to libcurl */
 int urlconntest_gethttp (char *url, unsigned int reqn) {
@@ -52,7 +60,7 @@ int urlconntest_gethttp (char *url, unsigned int reqn) {
   CURLcode res;
   int i;
   
-  struct memoryStruct chunk;
+  struct t_sMemoryStruct chunk;
   
   /* 2D array storing all raw sample times for nTIME_TESTS*reqn metrics */
   int (*timeVals)[nTIME_TESTS] = malloc(sizeof(int[reqn][nTIME_TESTS]));
@@ -64,8 +72,8 @@ int urlconntest_gethttp (char *url, unsigned int reqn) {
   
   if(NULL == timeVals) {
     /* out of memory! */ 
-    printf("not enough memory (malloc returned NULL)\n");
-    return 0;
+    if (printVerbose) printf("not enough memory (malloc returned NULL)\n");
+    return 1;
   }
  
   chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */ 
@@ -78,6 +86,8 @@ int urlconntest_gethttp (char *url, unsigned int reqn) {
     curl_handle = curl_easy_init();
 
     curl_easy_setopt(curl_handle, CURLOPT_URL, url);
+    
+    curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, headerList);
 
     /* Register writedata callback to suppress stdio output */ 
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_memory_callback);
@@ -100,15 +110,15 @@ int urlconntest_gethttp (char *url, unsigned int reqn) {
         char *ip;
         res = curl_easy_getinfo(curl_handle, CURLINFO_PRIMARY_IP, &ip);
         strcpy (storeValsStruct.ip, ip);
-        printf ("IP = %s\n", ip);
+        if (printVerbose) printf ("IP = %s\n", ip);
         res = curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &storeValsStruct.respCode);
       }
       
       res = get_time_metrics(curl_handle, &timeVals[i][0]);
       if (CURLE_OK == res) {
-        printf("Request %i, of %i completed\n", i + 1, reqn);
+        if (printVerbose) printf("Request %i, of %i completed\n", i + 1, reqn);
 #ifdef URLCONNTEST_STORE_RESP_DATA
-        printf("%lu bytes retrieved\n", (unsigned long)chunk.size);
+        if (printVerbose) printf("%lu bytes retrieved\n", (unsigned long)chunk.size);
 #endif
       }
     }
@@ -116,6 +126,8 @@ int urlconntest_gethttp (char *url, unsigned int reqn) {
     /* cleanup curl stuff - next request will be brand new */ 
     curl_easy_cleanup(curl_handle);
   } 
+  
+  curl_slist_free_all(headerList);
  
   free(chunk.memory);
   
@@ -145,7 +157,10 @@ int urlconntest_gethttp (char *url, unsigned int reqn) {
  
   /* we're done with libcurl, so clean it up */ 
   curl_global_cleanup();
- 
+  
+  if(CURLE_OK != res) {
+    return 1;
+  }
   return 0;
 }
 
@@ -165,6 +180,20 @@ double urlconntest_getmedianMetric (t_urlconntest_metrics metric) {
   return storeValsStruct.metricStructArr[metric].median;
 }
 
+int urlconntest_addheader (char *headerStr) {
+  struct curl_slist *temp=NULL;
+  
+  temp = curl_slist_append(headerList, headerStr);
+  if (NULL == temp) {
+    return 1;
+  }
+  return 0;
+}
+
+void urlconntest_setverbose (int verbose) {
+  printVerbose = verbose; 
+}
+
 
 /* ============================ Private functions ================================================================== */
 static void process_metric (int *arrToSort, int timeTest, int reqn) {
@@ -176,23 +205,24 @@ static void process_metric (int *arrToSort, int timeTest, int reqn) {
   storeValsStruct.metricStructArr[timeTest].jitter = 
     storeValsStruct.metricStructArr[timeTest].max - storeValsStruct.metricStructArr[timeTest].min;
 
-  printf ("\n%s:\n\tMedian = %.0fus\n", curlTimeTests[timeTest].optionName, 
+  if (printVerbose) printf ("\n%s:\n\tMedian = %.0fus\n", curlTimeTests[timeTest].optionName, 
                                         storeValsStruct.metricStructArr[timeTest].median);
-  printf ("\tMin = %ius\n", storeValsStruct.metricStructArr[timeTest].min);
-  printf ("\tMax = %ius\n", storeValsStruct.metricStructArr[timeTest].max);
-  printf ("\tJitter = %ius\n", storeValsStruct.metricStructArr[timeTest].jitter);
+  if (printVerbose) printf ("\tMin = %ius\n", storeValsStruct.metricStructArr[timeTest].min);
+  if (printVerbose) printf ("\tMax = %ius\n", storeValsStruct.metricStructArr[timeTest].max);
+  if (printVerbose) printf ("\tJitter = %ius\n", storeValsStruct.metricStructArr[timeTest].jitter);
 }
 
 static size_t
 write_memory_callback(void *contents, size_t size, size_t nmemb, void *userp)
 {
   size_t realsize = size * nmemb;
-  struct memoryStruct *mem = (struct memoryStruct *)userp;
 #ifdef URLCONNTEST_STORE_RESP_DATA
+  struct t_sMemoryStruct *mem = (struct t_sMemoryStruct *)userp;
+
   char *ptr = realloc(mem->memory, mem->size + realsize + 1);
   if(NULL == ptr) {
     /* out of memory! */ 
-    printf("not enough memory (realloc returned NULL)\n");
+    if (printVerbose) printf("not enough memory (realloc returned NULL)\n");
     return 0;
   }
  
@@ -206,7 +236,7 @@ write_memory_callback(void *contents, size_t size, size_t nmemb, void *userp)
 
 /* Get nTIME_TESTS time values from curl request
    Convert from double (seconds) to int (microsecs)
-   Assumptions: rett is a pointer to an array of size nTIME_TESTS
+   Assumptions: rett is a pointer to an array of at least size nTIME_TESTS
 */
 static CURLcode get_time_metrics (CURL *handle, int *rett) {
   CURLcode res;
@@ -215,12 +245,12 @@ static CURLcode get_time_metrics (CURL *handle, int *rett) {
   
   for (i = 0; i < nTIME_TESTS; i++) {
     res = curl_easy_getinfo(handle, curlTimeTests[i].option, &time);
-    printf ("\tGot %.6fs for %s\n", time, curlTimeTests[i].optionName);
+    if (printVerbose) printf ("\tGot %.6fs for %s\n", time, curlTimeTests[i].optionName);
     if(CURLE_OK == res) {
       time *= 1000000;
       rett[i] = (int)time;
     }
-    printf ("\tConverted -> %ius\n", rett[i]);
+    if (printVerbose) printf ("\tConverted -> %ius\n", rett[i]);
   }
   
   return res;

@@ -47,6 +47,6 @@ clean:
 # Compile and run (remove ./sktest if you dont wish to run after make)
 sktest: $(DEPS) $(COMMON_OBJ) src/sktest.o
 	$(CC) -pthread -o sktest src/sktest.o $(COMMON_OBJ) $(LDFLAGS) $(LDLIBS)
-	./sktest
+	./sktest -n 10 -H "pragma:" -verboseOn -url http://www.google.com/
 
 

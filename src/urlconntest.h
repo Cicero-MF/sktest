@@ -18,9 +18,12 @@ typedef struct {
   double median;  
 } t_sMetrics;
 
+void urlconntest_init (void);
 int urlconntest_gethttp(char *url, unsigned int reqn);
 char *urlconntest_getip (void) ;
 long urlconntest_getrespcode (void);
 double urlconntest_getmedianMetric (t_urlconntest_metrics metric);
+int urlconntest_addheader (char *headerStr);
+void urlconntest_setverbose (int verbose);
 
 #endif /* __URLCONNTEST_H__ */
