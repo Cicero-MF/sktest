@@ -16,7 +16,6 @@ $ sudo apt install git
 $ sudo apt install make
 $ sudo apt install curl
 $ sudo apt install libssl-dev
-$ sudo apt install libssl-dev
 $ sudo apt install zlib1g-dev
 ```
 
@@ -65,6 +64,7 @@ When the test finishes, it prints a ; separated list of metrics as listed below 
 
 Given time, I'd have like to have done the following:
 
+- Probably should've used mutlithreading capabilities. 
 - Would've have liked to test a lot more, written tests for the median calc functions etc. 
 - Error checking and catching could be better in places.  
 - Would've liked to further investigate whether tests are more consistent and reliable without forcing a new connection every time - this would speed up the testing considerably. Only forced a new connection to try to get a consistent name lookup time.
