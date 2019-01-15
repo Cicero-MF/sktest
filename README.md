@@ -16,7 +16,6 @@ $ sudo apt install git
 $ sudo apt install make
 $ sudo apt install curl
 $ sudo apt install libssl-dev
-$ sudo apt install libssl-dev
 $ sudo apt install zlib1g-dev
 ```
 
@@ -45,7 +44,7 @@ $ ./sktest -url http://www.google.com/ -n 5 -verboseOn
 
 A list of arguments that can be provided to the test in addition to the URL are given below. 
 
--	**[\<url\>]** => URL for the test
+-	**-url \<url\>** => URL for the test
 -	**-H "Header name: Header-value"** => specify extra HTTP headers to add to the requests. Note: can be used multiple times.
 -	**-n \<integer\>** => Number of sample HTTP requests to make during the test
 
@@ -65,10 +64,11 @@ When the test finishes, it prints a ; separated list of metrics as listed below 
 
 Given time, I'd have like to have done the following:
 
+- Probably should've used mutlithreading capabilities. 
 - Would've have liked to test a lot more, written tests for the median calc functions etc. 
 - Error checking and catching could be better in places.  
 - Would've liked to further investigate whether tests are more consistent and reliable without forcing a new connection every time - this would speed up the testing considerably. Only forced a new connection to try to get a consistent name lookup time.
 - Would like to investigate SSL connections, and compare
 - Test larger sample sets.  
 - Periodic testing to get a better picture at different times of the day.
-- Static analysis using splint was attampted but would've taken too long to remove the curl rabbithole it wanted to go down
+- Static analysis using splint was attempted but would've taken too long to remove the curl rabbithole it wanted to go down
