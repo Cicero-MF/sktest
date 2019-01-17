@@ -47,6 +47,7 @@ A list of arguments that can be provided to the test in addition to the URL are 
 -	**-url \<url\>** => URL for the test
 -	**-H "Header name: Header-value"** => specify extra HTTP headers to add to the requests. Note: can be used multiple times.
 -	**-n \<integer\>** => Number of sample HTTP requests to make during the test
+-	**-verbose\<On/Off\>** => verboseOn prints progress and raw metrics from each test, verboseOff or not adding the verbose argument will suppress any extra run-time prints
 
 ### Output
 
