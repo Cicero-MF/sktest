@@ -44,9 +44,10 @@ $ ./sktest -url http://www.google.com/ -n 5 -verboseOn
 
 A list of arguments that can be provided to the test in addition to the URL are given below. 
 
--	**[\<url\>]** => URL for the test
+-	**-url \<url\>** => URL for the test
 -	**-H "Header name: Header-value"** => specify extra HTTP headers to add to the requests. Note: can be used multiple times.
 -	**-n \<integer\>** => Number of sample HTTP requests to make during the test
+-	**-verbose\<On/Off\>** => verboseOn prints progress and raw metrics from each test, verboseOff or not adding the verbose argument will suppress any extra run-time prints
 
 ### Output
 
@@ -71,4 +72,4 @@ Given time, I'd have like to have done the following:
 - Would like to investigate SSL connections, and compare
 - Test larger sample sets.  
 - Periodic testing to get a better picture at different times of the day.
-- Static analysis using splint was attampted but would've taken too long to remove the curl rabbithole it wanted to go down
+- Static analysis using splint was attempted but would've taken too long to remove the curl rabbithole it wanted to go down
