@@ -5,25 +5,6 @@
  *
  */
 
-
-
-void util_bubble_sort (int *arr, int n) {
-  int temp;
-  int i, j;
-  
-  /* the following two loops sort the array arr in ascending order */
-  for(i=0; i<n-1; i++) {
-    for(j=i+1; j<n; j++) {
-      if(arr[j] < arr[i]) {
-        /* swap */
-        temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
-      }
-    }
-  }
-}
-
 void util_quick_sort(int *arr, int first, int last) {
    int i, j, pivot, temp;
 
@@ -58,11 +39,7 @@ void util_quick_sort(int *arr, int first, int last) {
 double util_median(int *arr, int n) {
   double ret;
 
-#ifdef USE_QUICK_SORT
   util_quick_sort(arr, 0, n-1);
-#else
-  util_bubble_sort(arr, n);
-#endif  
 
   if(n%2==0) {
     ret = (arr[n/2] + arr[n/2 - 1]) / 2.0;

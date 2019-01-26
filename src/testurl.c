@@ -12,6 +12,7 @@
 
 #include "util.h" 
 #include "urlconntest.h"
+#include "testurl.h"
 
 #define MAX_URL_LEN     (50)
 #define MAX_HEADER_LEN  (100)
@@ -33,13 +34,14 @@ int main (int argc, char* argv[]) {
   
   if ((0 == err) && (0 == urlconntest_gethttp (urlToTest, reqn))) {
   
-    printf("\nSKTEST;%s;%ld;%.0f;%.0f;%.0f;%.0f\n",
-       urlconntest_getip(),
-       urlconntest_getrespcode(),
-       urlconntest_getmedianMetric(URLCONNTEST_METRIC_NAME_LOOKUP_TIME),
-       urlconntest_getmedianMetric(URLCONNTEST_METRIC_CONNECT_TIME),
-       urlconntest_getmedianMetric(URLCONNTEST_METRIC_START_TRANSFER_TIME),
-       urlconntest_getmedianMetric(URLCONNTEST_METRIC_TOTAL_TIME));
+	printf("\nURLTEST\t%s; IP: %s; Response Code: %ld\n\tMedian Name Lookup Time: %.0fus\n\tMedian Connect Time: %.0fus\n\tMedian Start Transfer Time: %.0fus\n\tMedian Total Time: %.0fus\n", 
+    urlToTest,
+    urlconntest_getip(),
+    urlconntest_getrespcode(),
+    urlconntest_getmedianMetric(URLCONNTEST_METRIC_NAME_LOOKUP_TIME),
+    urlconntest_getmedianMetric(URLCONNTEST_METRIC_CONNECT_TIME),
+    urlconntest_getmedianMetric(URLCONNTEST_METRIC_START_TRANSFER_TIME),
+    urlconntest_getmedianMetric(URLCONNTEST_METRIC_TOTAL_TIME));
   }
   
   return 0;
@@ -93,7 +95,7 @@ static int process_args(int argc, char* argv[]) {
     strcpy(urlToTest, "http://www.google.com/");
   }
 
-  if ((0 == reqn) || (reqn > 100)) {
+  if ((0 == reqn) || (reqn > 500)) {
     printf("reqn not specified or too large - using default of 5\n");
     reqn = 5;
   }

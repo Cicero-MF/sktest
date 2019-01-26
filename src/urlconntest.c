@@ -187,6 +187,8 @@ int urlconntest_addheader (char *headerStr) {
   if (NULL == temp) {
     return 1;
   }
+  
+  headerList = temp;
   return 0;
 }
 

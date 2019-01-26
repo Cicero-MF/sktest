@@ -9,16 +9,14 @@ LDLIBS=-lcurl -lm -lssl -lcrypto -lz
 LIBCURL_VERSION := 7.63.0
 
 COMMON_OBJ=src/urlconntest.o src/util.o
-ALL_SRC=src/urlconntest.c src/sktest.c src/util.c
-ALL_HDR=src/urlconntest.h src/sktest.h src/util.h
+ALL_SRC=src/urlconntest.c src/testurl.c src/util.c
+ALL_HDR=src/urlconntest.h src/testurl.h src/util.h
 DEPS=$(BUILD_PATH)/libcurl_install/lib/libcurl.a
 
-all: sktest
+all: testurl
 
 
 # Pull Curl binary and install 
-# Disclaimer/credit: libcurl install taken from https://github.com/sabyahsan/Youtube-test/
-# 			  		 to speed up time.
 $(BUILD_PATH)/curl-$(LIBCURL_VERSION).tar.bz2:
 	mkdir -p build
 	curl -L http://curl.haxx.se/download/curl-$(LIBCURL_VERSION).tar.bz2 -o $@
@@ -39,14 +37,14 @@ $(BUILD_PATH)/libcurl_install/lib/libcurl.a: $(BUILD_PATH)/libcurl/Makefile
 
 
 clean:
-	$(RM) -f sktest sktest.o src/sktest.o $(COMMON_OBJ)
+	$(RM) -f testurl testurl.o src/testurl.o $(COMMON_OBJ)
 
 .c.o: $(ALL_HDR) $(DEPS)
 	$(CC) $(CCFLAGS) $*.c $(LDFLAGS) $(LDLIBS) -o $*.o 
 
-# Compile and run (remove ./sktest if you dont wish to run after make)
-sktest: $(DEPS) $(COMMON_OBJ) src/sktest.o
-	$(CC) -pthread -o sktest src/sktest.o $(COMMON_OBJ) $(LDFLAGS) $(LDLIBS)
-	./sktest -n 10 -H "pragma:" -verboseOn -url http://www.google.com/
+# Compile and run (remove ./testurl if you dont wish to run after make)
+testurl: $(DEPS) $(COMMON_OBJ) src/testurl.o
+	$(CC) -pthread -o testurl src/testurl.o $(COMMON_OBJ) $(LDFLAGS) $(LDLIBS)
+	./testurl -n 50 -H "pragma:" -verboseOn -url http://www.google.com/
 
 
